@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUCAT VIKASPURI | Attendance Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #475569;    /* Slate 600 */
+            --accent: #8B5CF6;     /* Violet 500 */
+            --accent-light: #A78BFA;
+            --bg-gradient: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 50%, #F5F3FF 100%);
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --border: rgba(139, 92, 246, 0.1);
+            --text-main: #1E293B;  /* Slate 800 */
+            --text-muted: #64748B; /* Slate 500 */
+        }
+
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.98) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
+
+        body { 
+            background: var(--bg-gradient); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 36px;
+            padding: 55px;
+            box-shadow: 0 40px 100px -20px rgba(139, 92, 246, 0.08), 0 20px 40px -15px rgba(0, 0, 0, 0.03);
+            animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .header { text-align: center; margin-bottom: 50px; }
+        .header h1 { 
+            font-family: 'Outfit', sans-serif; 
+            font-size: 2.8rem; 
+            font-weight: 900; 
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -0.03em;
+        }
+        .header p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; font-weight: 500; opacity: 0.8; }
+
+        .form-group { margin-bottom: 28px; }
+        label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.8; }
+        label span { color: #F43F5E; }
+
+        .input-wrapper { position: relative; border-radius: 16px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: #FFFFFF; border: 1.5px solid #F1F5F9; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .input-wrapper:hover { border-color: var(--accent-light); }
+        .input-wrapper:focus-within { background: #FFFFFF; border-color: var(--accent); box-shadow: 0 10px 20px -5px rgba(139, 92, 246, 0.15); transform: translateY(-2px); }
+        
+        .input-wrapper i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #94A3B8; transition: 0.3s; font-size: 1.05rem; }
+        .input-wrapper:focus-within i { color: var(--accent); }
+        
+        .form-control {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 18px 20px 18px 56px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            font-weight: 500;
+        }
+
+        .form-control::placeholder { color: #CBD5E1; }
+
+        select.form-control { cursor: pointer; appearance: none; }
+        .select-wrapper::after {
+            content: "\f107";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94A3B8;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+        .select-wrapper:focus-within::after { transform: translateY(-50%) rotate(180deg); color: var(--accent); }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            color: #ffffff;
+            border: none;
+            padding: 20px;
+            border-radius: 18px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 15px;
+            box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.4);
+        }
+
+        .submit-btn:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.5); }
+        .submit-btn:active { transform: translateY(-1px); }
+
+        .clear-btn {
+            background: #FFF5F7;
+            color: #F43F5E;
+            border: 1px solid rgba(244, 63, 94, 0.1);
+            padding: 12px 22px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            float: right;
+            opacity: 0.8;
+        }
+
+        .clear-btn:hover { background: #FFE4E6; border-color: #F43F5E; transform: translateY(-2px); opacity: 1; }
+
+        .alert { padding: 22px; border-radius: 20px; margin-bottom: 35px; font-weight: 600; display: flex; align-items: center; gap: 12px; transform: translateY(-10px); animation: fadeInScale 0.4s forwards; }
+        .alert-success { background: #F0FDF4; border: 1px solid #DCFCE7; color: #15803D; box-shadow: 0 10px 30px -10px rgba(21, 128, 61, 0.1); }
+        .alert-error { background: #FEF2F2; border: 1px solid #FEE2E2; color: #991B1B; }
+
+        @media (max-width: 650px) { 
+            .container { padding: 40px 25px; border-radius: 28px; } 
+            .header h1 { font-size: 2.22rem; } 
+            .header p { font-size: 0.88rem; }
+            .grid-responsive { grid-template-columns: 1fr !important; gap: 0 !important; }
+            .form-group { margin-bottom: 24px; }
+            .submit-btn { padding: 18px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blobs">
+        <div class="blob"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>DUCAT VIKASPURI</h1>
+            <p><strong>ATTENDANCE FORM</strong><br>Please fill out the following details to mark your attendance. All fields marked with an asterisk (*) are required.</p>
+        </div>
+
+        {% if messages %}
+            <div id="toast-container" style="position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 450px;">
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}" style="animation: slideIn 0.5s ease-out forwards; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    {% if message.tags == 'error' %}<i class="fa-solid fa-circle-xmark"></i>{% else %}<i class="fa-solid fa-circle-check"></i>{% endif %}
+                    {{ message }}
+                    <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer; margin-left:auto; padding-left:15px; font-size:1.1rem; opacity:0.6;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                {% endfor %}
+            </div>
+            <script>setTimeout(() => { document.getElementById('toast-container')?.remove(); }, 5000);</script>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Name <span>*</span></label>
+                <div class="input-wrapper">
+                    <input type="text" name="name" id="id_student_name" class="form-control" placeholder="Enter your full name" required>
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Student ID <span>*</span></label>
+                <div class="input-wrapper">
+                    <input type="text" name="student_id" id="id_student_id" class="form-control" placeholder="Enter ID (e.g. 123/24)" required>
+                    <i class="fa-solid fa-id-card"></i>
+                </div>
+                <div id="id_status_msg" style="font-size: 0.75rem; margin-top: 5px; font-weight: 700; color: var(--accent);"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Trainer Name <span>*</span></label>
+                <div class="input-wrapper select-wrapper">
+                    <select name="trainer_name" id="trainerSelect" class="form-control" required>
+                        <option value="">Select Trainer</option>
+                        {% for trainer_val, trainer_label in trainer_choices %}
+                            <option value="{{ trainer_val }}">{{ trainer_label }}</option>
+                        {% endfor %}
+                    </select>
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                </div>
+            </div>
+
+            <div class="form-group" id="batchFormGroup" style="animation: fadeInScale 0.4s forwards;">
+                <label>Select Batch <span>*</span></label>
+                <div class="input-wrapper select-wrapper">
+                    <select id="batchSelect" class="form-control" name="form_batch_select">
+                        <option value="">Select Trainer First...</option>
+                    </select>
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+            </div>
+
+            <div class="grid-responsive" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Technology (Course) <span>*</span></label>
+                    <div class="input-wrapper select-wrapper">
+                        <select name="technology" class="form-control" required>
+                            <option value="">Select Course</option>
+                            {% for tech_val, tech_label in technology_choices %}
+                                <option value="{{ tech_val }}">{{ tech_label }}</option>
+                            {% endfor %}
+                        </select>
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Batch Time <span>*</span></label>
+                    <div class="input-wrapper">
+                        <input type="text" name="batch_time" class="form-control" placeholder="e.g. 10:30 AM" required>
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Current (Today) Topic <span>*</span></label>
+                <div class="input-wrapper">
+                    <input type="text" name="today_topic" class="form-control" placeholder="What was taught today?" required>
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+            </div>
+
+            <div class="grid-responsive" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Weekdays/Weekend <span>*</span></label>
+                    <div class="input-wrapper select-wrapper">
+                        <select name="week_type" class="form-control" required>
+                            <option value="Weekdays">Weekdays</option>
+                            <option value="Weekend">Weekend</option>
+                        </select>
+                        <i class="fa-solid fa-calendar-week"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Batch Mode <span>*</span></label>
+                    <div class="input-wrapper select-wrapper">
+                        <select name="batch_mode" class="form-control" required>
+                            <option value="Offline">Offline</option>
+                            <option value="Online">Online</option>
+                        </select>
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; width:100%;">
+                <button type="button" class="clear-btn" onclick="confirmReset()">
+                    <i class="fa-solid fa-broom"></i> Clear Form
+                </button>
+            </div>
+            
+            <button type="submit" class="submit-btn">
+                Submit Attendance <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        function confirmReset() {
+            if (confirm("Are you sure you want to clear all the fields in this form?")) {
+                document.querySelector('form').reset();
+                document.getElementById('batchFormGroup').style.display = 'none';
+            }
+        }
+
+        // Parse batches from backend
+        const trainerBatches = JSON.parse('{{ trainer_batches_json|escapejs }}');
+        
+        const trainerSelect = document.getElementById('trainerSelect');
+        const batchSelect = document.getElementById('batchSelect');
+        const batchFormGroup = document.getElementById('batchFormGroup');
+        const techSelect = document.querySelector('select[name="technology"]');
+        const timeInput = document.querySelector('input[name="batch_time"]');
+        const weekSelect = document.querySelector('select[name="week_type"]');
+
+        trainerSelect.addEventListener('change', function() {
+            const selectedTrainer = this.value;
+            const batches = trainerBatches[selectedTrainer] || [];
+
+            // Reset batch dropdown
+            batchSelect.innerHTML = '<option value="">Select a running batch...</option>';
+            
+            if (batches.length > 0) {
+                batches.forEach(b => {
+                    const opt = document.createElement('option');
+                    // Store the stringified batch object securely
+                    opt.value = encodeURIComponent(JSON.stringify(b));
+                    opt.textContent = `${b.batch_name} - ${b.timing} (${b.batch_type})`;
+                    batchSelect.appendChild(opt);
+                });
+            } else {
+                if(selectedTrainer) {
+                    batchSelect.innerHTML = '<option value="">No active batches for this trainer</option>';
+                } else {
+                    batchSelect.innerHTML = '<option value="">Select Trainer First...</option>';
+                }
+            }
+        });
+
+        batchSelect.addEventListener('change', function() {
+            if (!this.value) return;
+            try {
+                const b = JSON.parse(decodeURIComponent(this.value));
+                
+                // Set Batch Time and make it readonly to prevent messing dashboard view
+                timeInput.value = b.timing;
+                timeInput.readOnly = true;
+                timeInput.style.backgroundColor = "#F8FAFC";
+
+                // Map Week Type
+                if (b.batch_type === 'Weekdays' || b.batch_type === 'Weekend') {
+                    weekSelect.value = b.batch_type;
+                }
+                
+                // Keep Week Type read-only visually using pointer-events
+                weekSelect.style.pointerEvents = 'none';
+                weekSelect.style.backgroundColor = "#F8FAFC";
+                
+            } catch (e) {
+                console.error("Batch parse error", e);
+            }
+        });
+
+        // Student Auto-fill Logic
+        const sidInput = document.getElementById('id_student_id');
+        const nameInput = document.getElementById('id_student_name');
+        const statusMsg = document.getElementById('id_status_msg');
+
+        function checkStudent() {
+            const sid = sidInput.value.trim();
+            if (sid.length >= 2) {
+                statusMsg.innerText = 'Searching student...';
+                fetch(`/feedback/get-student/?sid=${sid}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            nameInput.value = data.name || '';
+                            statusMsg.style.color = '#15803D';
+                            statusMsg.innerText = '✅ Student details found!';
+                            
+                            // 1. Auto-select trainer and trigger change
+                            if (data.trainer_name) {
+                                trainerSelect.value = data.trainer_name;
+                                trainerSelect.dispatchEvent(new Event('change'));
+                            }
+
+                            // 2. Auto-select technology if matches
+                            if (data.course) {
+                                const techSelect = document.querySelector('select[name="technology"]');
+                                Array.from(techSelect.options).forEach(opt => {
+                                    if(opt.value === data.course) techSelect.value = data.course;
+                                });
+                            }
+
+                            // 3. Auto-select batch type
+                            if (data.batch_type) {
+                                weekSelect.value = data.batch_type;
+                            }
+                        } else {
+                            statusMsg.style.color = '#94A3B8';
+                            statusMsg.innerText = 'Student not found in records';
+                        }
+                    });
+            }
+        }
+        sidInput.addEventListener('input', checkStudent);
+    </script>
+</body>
+</html>

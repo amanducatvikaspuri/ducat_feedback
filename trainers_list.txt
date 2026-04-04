@@ -1,0 +1,14 @@
+MR. AMAN (DATA SCIENCE) - Data Science
+MR. ABDUL (DATA ANALYTICS) - Data Analytics
+MR. PRASHANT (GRAPHIC) - Graphic Design
+MR. SAGAR (CLOUD) - Cloud Computing
+MR. RAJESH (JAVA) - Java Development
+MR. HEMANT (ETHICAL) - Ethical Hacking
+MRS. MAMTA (MERN) - MERN Stack
+MR. SOUVIK (CYBER) - Cyber Security
+MRS NITI GUPTA (PD) - Personality Development
+AMAN KHAN (DIGITAL MARKETING) - Digital Marketing
+MR. RUPINDER (AUTOCAD) - AutoCAD/SOLIDWORKS/3DS MAX
+MR. AMAN SIR (FLUTTER) - Flutter Development
+MR. PRATEEK (WEB-DESIGN) - Web Designing
+MR. TARUN (MERN) - MERN Stack

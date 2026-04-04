@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ducat Admin - Create Account</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0c10;
+            --accent: #6366f1;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        
+        body {
+            background: var(--bg-dark);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated Background Elements */
+        .bg-blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: -1;
+            animation: move 20s infinite alternate;
+        }
+        .blob-1 { top: -10%; left: -10%; }
+        .blob-2 { bottom: -10%; right: -10%; background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%); }
+
+        @keyframes move {
+            from { transform: translate(0, 0); }
+            to { transform: translate(100px, 100px); }
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 50px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-header { text-align: center; margin-bottom: 40px; }
+        .auth-header i { font-size: 3rem; color: var(--accent); margin-bottom: 15px; }
+        .auth-header h1 { font-size: 2rem; font-weight: 800; color: var(--text-light); letter-spacing: -0.5px; }
+        .auth-header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 8px; }
+
+        .auth-form { display: grid; gap: 20px; }
+        .input-group { position: relative; }
+        .input-group i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted); transition: 0.3s; }
+
+        .auth-input {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            padding: 16px 20px 16px 55px;
+            border-radius: 15px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .auth-input:focus { border-color: var(--accent); background: rgba(99, 102, 241, 0.05); }
+        .auth-input:focus + i { color: var(--accent); }
+
+        .auth-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .auth-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4); background: #4f46e5; }
+        .auth-btn:active { transform: translateY(0); }
+
+        .auth-footer { text-align: center; margin-top: 30px; font-size: 0.9rem; color: var(--text-muted); }
+        .auth-footer a { color: var(--accent); text-decoration: none; font-weight: 700; }
+        .auth-footer a:hover { text-decoration: underline; }
+
+        .messages { position: fixed; top: 20px; right: 20px; z-index: 1000; display: grid; gap: 10px; }
+        .alert { background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); color: #f43f5e; padding: 15px 25px; border-radius: 12px; font-size: 0.85rem; backdrop-filter: blur(10px); animation: slideIn 0.5s ease-out; }
+        .alert-success { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); color: #10b981; }
+
+        @keyframes slideIn { from { opacity:0; transform: translateX(50px); } to { opacity:1; transform: translateX(0); } }
+
+        .pass-req {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+            background: rgba(255,255,255,0.02);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+
+    <div class="messages">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fa-solid fa-user-plus"></i>
+            <h1>Admin Signup</h1>
+            <p>Create credentials for Ducat Management Hub</p>
+        </div>
+
+        <form method="POST" class="auth-form">
+            {% csrf_token %}
+            <div class="input-group">
+                <i class="fa-solid fa-user"></i>
+                {{ form.username }}
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-envelope"></i>
+                {{ form.email }}
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                {{ form.password }}
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-shield-halved"></i>
+                {{ form.confirm_password }}
+            </div>
+
+            <div class="pass-req">
+                <i class="fa-solid fa-circle-info" style="color:var(--accent);"></i> 
+                Must be 8-16 characters with letters, numbers & special characters.
+            </div>
+
+            <button type="submit" class="auth-btn">CREATE ACCOUNT</button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account? <a href="{% url 'login_view' %}">Log In</a>
+        </div>
+    </div>
+
+    <script>
+        // Dismiss alerts after 5s
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(a => a.style.display = 'none');
+        }, 5000);
+    </script>
+</body>
+</html>
