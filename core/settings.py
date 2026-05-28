@@ -78,11 +78,8 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'aman19950$web_feed_db',
-        'HOST':'aman19950.mysql.pythonanywhere-services.com',
-        'USER':'aman19950',
-        'PASSWORD':'admin@123'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
