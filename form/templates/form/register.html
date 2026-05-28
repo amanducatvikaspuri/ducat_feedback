@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Registration | DUCAT Vikaspuri</title>
+    <title>Student Registration | DUCAT {{ active_branch }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -84,7 +84,7 @@
         <div class="reg-header">
             <i class="fa-solid fa-user-plus"></i>
             <h1>Student Enrollment</h1>
-            <p style="color: #64748b; font-size: 0.85rem; margin-top: 5px;">Join DUCAT Vikaspuri Learning Hub</p>
+            <p style="color: #64748b; font-size: 0.85rem; margin-top: 5px;">Join DUCAT {{ active_branch }} Learning Hub</p>
         </div>
 
         {% if messages %}
@@ -99,15 +99,18 @@
             {% csrf_token %}
             <div class="input-group">
                 <label>Student ID (SID)</label>
-                <input type="text" name="student_id" placeholder="e.g. 123456" required>
+                <input type="text" name="student_id" placeholder="e.g. 123456" required 
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             </div>
             <div class="input-group">
                 <label>Full Name</label>
                 <input type="text" name="name" placeholder="John Doe" required>
             </div>
             <div class="input-group">
-                <label>Phone Number</label>
-                <input type="text" name="phone" placeholder="+91 00000 00000" required>
+                <label>Phone Number (10 Digits)</label>
+                <input type="text" name="phone" placeholder="9876543210" required 
+                       maxlength="10" minlength="10" pattern="\d{10}"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)">
             </div>
             <div class="input-group">
                 <label>Email Address</label>
@@ -120,6 +123,14 @@
                     {% for val, label in technology_choices %}
                         <option value="{{ val }}">{{ label }}</option>
                     {% endfor %}
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Branch Selection</label>
+                <select name="branch" required>
+                    <option value="">Select Branch</option>
+                    <option value="Vikaspuri" {% if active_branch == 'Vikaspuri' %}selected{% endif %}>Vikaspuri</option>
+                    <option value="Pitampura" {% if active_branch == 'Pitampura' %}selected{% endif %}>Pitampura</option>
                 </select>
             </div>
             <button type="submit" class="btn-submit">

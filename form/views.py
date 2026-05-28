@@ -8,6 +8,7 @@ import json
 
 @csrf_exempt
 def attendance_form(request):
+    branch_filter = request.GET.get('branch', 'Vikaspuri')
     if request.method == 'POST':
         try:
             name = request.POST.get('name')
@@ -18,7 +19,7 @@ def attendance_form(request):
             trainer = request.POST.get('trainer_name')
             week = request.POST.get('week_type')
             mode = request.POST.get('batch_mode')
-            
+
             if not all([name, sid, tech, topic, trainer, week, mode]):
                  messages.error(request, "Please fill all required fields.")
                  return redirect('attendance_form')
@@ -55,36 +56,46 @@ def attendance_form(request):
                 batch_time=time_val,
                 trainer_name=trainer,
                 week_type=week,
-                batch_mode=mode
+                batch_mode=mode,
+                branch=request.POST.get('branch', branch_filter)
             )
             messages.success(request, f'Thank you {name}, your attendance is marked!')
             return redirect('attendance_form')
         except Exception as e:
             messages.error(request, f'Submission Error: {str(e)}')
             return redirect('attendance_form')
-            
+
     # Pre-fetch all running batches grouped by trainer
     batches_data = {}
-    trainers = Trainer.objects.prefetch_related('batches').all()
+    today = timezone.localdate()
+    trainers = Trainer.objects.filter(branch=branch_filter).prefetch_related('batches').all()
     for t in trainers:
-        batches_data[t.name] = [{
-            'id': b.id,
-            'batch_name': b.batch_name,
-            'batch_type': b.batch_type,
-            'timing': b.timing
-        } for b in t.batches.all()]
+        active_batches = [b for b in t.batches.all() if b.status == 'Active' and (not b.end_date or b.end_date >= today)]
+        if active_batches:
+            batches_data[t.name] = [{
+                'id': b.id,
+                'batch_name': b.batch_name,
+                'batch_type': b.batch_type,
+                'timing': b.timing
+            } for b in active_batches]
 
-    # Fetch unique technologies from active batches + static choices
-    # Normalizing to uppercase for consistency
-    batch_techs = set(b.batch_name.upper() for b in Batch.objects.all() if b.batch_name)
-    static_techs = set(tech.upper() for tech in dict(Attendance.TECHNOLOGY_CHOICES).keys())
-    all_techs = sorted(list(batch_techs | static_techs))
-    dynamic_tech_choices = [(tech, tech) for tech in all_techs if tech]
+    # Technology choices are now static globally to show all available courses
+    dynamic_tech_choices = Attendance.TECHNOLOGY_CHOICES
+
+    # Use dynamic trainer choices based on filtered trainers list
+    if branch_filter == 'Vikaspuri':
+        dynamic_trainer_choices = Attendance.TRAINER_CHOICES
+    else:
+        dynamic_trainer_choices = []
+        for t in trainers:
+            label = f"{t.name} ({t.course})" if t.course and t.course.upper() not in t.name.upper() else t.name
+            dynamic_trainer_choices.append((label, label))
 
     context = {
-        'technology_choices': dynamic_tech_choices, # Dynamic + Static merged
-        'trainer_choices': Attendance.TRAINER_CHOICES,
-        'trainer_batches_json': json.dumps(batches_data)
+        'technology_choices': dynamic_tech_choices,
+        'trainer_choices': dynamic_trainer_choices,
+        'trainer_batches_json': json.dumps(batches_data),
+        'active_branch': branch_filter
     }
     return render(request, 'form/form.html', context)
 @csrf_exempt
@@ -96,18 +107,20 @@ def student_registration(request):
             phone = request.POST.get('phone')
             email = request.POST.get('email')
             course = request.POST.get('course')
-            
-            if not all([name, sid, phone, email, course]):
+            branch = request.POST.get('branch')
+
+            if not all([name, sid, phone, email, course, branch]):
                 messages.error(request, "All fields are required!")
                 return redirect('student_registration')
-                
+
             Student.objects.update_or_create(
                 sid=sid,
                 defaults={
                     'name': name,
                     'phone_number': phone,
                     'email': email,
-                    'course': course
+                    'course': course,
+                    'branch': branch
                 }
             )
             messages.success(request, f"Welcome {name}! Registration Successful.")
@@ -115,15 +128,14 @@ def student_registration(request):
         except Exception as e:
             messages.error(request, f"Error: {str(e)}")
             return redirect('student_registration')
-            
-    # Fetch unique technologies from active batches + static choices
-    # Normalizing to uppercase for consistency
-    batch_techs = set(b.batch_name.upper() for b in Batch.objects.all() if b.batch_name)
-    static_techs = set(tech.upper() for tech in dict(Attendance.TECHNOLOGY_CHOICES).keys())
-    all_techs = sorted(list(batch_techs | static_techs))
-    dynamic_tech_choices = [(tech, tech) for tech in all_techs if tech]
+
+    branch_query = request.GET.get('branch', 'Vikaspuri')
+
+    # Use static technology choices globally
+    dynamic_tech_choices = Attendance.TECHNOLOGY_CHOICES
 
     context = {
-        'technology_choices': dynamic_tech_choices
+        'technology_choices': dynamic_tech_choices,
+        'active_branch': branch_query
     }
     return render(request, 'form/register.html', context)

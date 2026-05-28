@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-@!ckdk#p5-ffmmqrhey55e3%2hwx+m1jhzilefzvpu%*y#+vtt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -78,8 +78,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'aman19950$web_feed_db',
+        'HOST':'aman19950.mysql.pythonanywhere-services.com',
+        'USER':'aman19950',
+        'PASSWORD':'admin@123'
     }
 }
 
@@ -128,3 +131,14 @@ LOGIN_URL = 'login_view'
 # # WATI WhatsApp API Settings
 # WATI_BASE_URL = 'https://live-server-url.wati.io' # Replace with your WATI Base URL
 # WATI_API_TOKEN = 'your-api-token-here'             # Replace with your WATI Access Token
+
+# Email Settings (for Gmail)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'amanducatvikaspuri@gmail.com'
+EMAIL_HOST_PASSWORD = 'wpqv kxcr vbdy vdbh'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

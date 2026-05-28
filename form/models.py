@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 class Student(models.Model):
     sid = models.CharField(max_length=50, primary_key=True)
@@ -9,8 +11,17 @@ class Student(models.Model):
     course = models.CharField(max_length=100)
     current_batch = models.ForeignKey('dashboard.Batch', on_delete=models.SET_NULL, null=True, blank=True, related_name='enrolled_students')
     joining_date = models.DateField(default=timezone.now)
+    BRANCH_CHOICES = [
+        ('Vikaspuri', 'Vikaspuri'),
+        ('Pitampura', 'Pitampura'),
+        ('South Ex', 'South Ex'),
+        ('Noida', 'Noida'),
+        ('Gurgaon', 'Gurgaon'),
+        ('Ghaziabad', 'Ghaziabad'),
+    ]
     semester = models.CharField(max_length=20, blank=True, null=True)
     section = models.CharField(max_length=20, blank=True, null=True)
+    branch = models.CharField(max_length=50, choices=BRANCH_CHOICES, default='Vikaspuri')
 
     def __str__(self):
         return f"{self.sid} - {self.name}"
@@ -83,10 +94,15 @@ class Attendance(models.Model):
         ('MR. AMAN SIR (FLUTTER)', 'MR. AMAN SIR (FLUTTER)'),
         ('MR. PRATEEK (WEB-DESIGN)', 'MR. PRATEEK (WEB-DESIGN)'),
         ('MR. TARUN (MERN)', 'MR. TARUN (MERN)'),
+        ('ABHISHEK UPADHYAY (DATA SCIENCE)','ABHISHEK UPADHYAY (DATA SCIENCE)'),
+        ('SOURABH (JAVA )','SOURABH (JAVA )'),
+        ('MR. KUNAL (CYBER SECURITY)','MR. KUNAL (CYBER SECURITY)')
     ]
+
+
     name = models.CharField(max_length=100)
     student_id = models.CharField(max_length=50)
-    technology = models.CharField(max_length=50, choices=TECHNOLOGY_CHOICES)
+    technology = models.CharField(max_length=100, choices=TECHNOLOGY_CHOICES)
     today_topic = models.CharField(max_length=200)
     batch_time = models.CharField(max_length=20)
     trainer_name = models.CharField(max_length=100, choices=TRAINER_CHOICES)
@@ -95,6 +111,17 @@ class Attendance(models.Model):
     submitted_at = models.DateTimeField(auto_now_add=True)
     semester = models.CharField(max_length=20, blank=True, null=True)
     section = models.CharField(max_length=20, blank=True, null=True)
+    branch = models.CharField(max_length=50, default='Vikaspuri')
 
     def __str__(self):
         return f"{self.name} - {self.student_id}"
+
+@receiver(pre_delete, sender=Student)
+def cleanup_student_data(sender, instance, **kwargs):
+    """Automatically delete all attendance and feedback records when a student is deleted."""
+    # Delete Attendance
+    Attendance.objects.filter(student_id=instance.sid).delete()
+
+    # Delete Feedback (using CharField student_id)
+    from feedback.models import Feedback
+    Feedback.objects.filter(student_id=instance.sid).delete()

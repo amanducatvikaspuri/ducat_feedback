@@ -15,7 +15,7 @@ class Feedback(models.Model):
     email = models.EmailField()
     phone = models.CharField(max_length=15)
     branch = models.CharField(max_length=100, default="Vikaspuri")
-    
+
     # Course Info
     trainer_name = models.CharField(max_length=255)
     technology = models.CharField(max_length=255)
@@ -23,16 +23,21 @@ class Feedback(models.Model):
     batch_mode = models.CharField(max_length=20, default="Offline")
     batch_type = models.CharField(max_length=20, default="Weekdays") # Weekdays/Weekend
     phase = models.CharField(max_length=10, choices=PHASE_CHOICES, default="P-1")
-    
+
     # Ratings (1-5 stars)
     ques1_rating = models.IntegerField(default=5) # Understand topics
     ques2_rating = models.IntegerField(default=5) # Regularity/Punctuality
     ques3_rating = models.IntegerField(default=5) # Practical work
     ques4_rating = models.IntegerField(default=5) # Doubt clearing
-    
+
     # Review
     review_description = models.TextField(blank=True, null=True)
-    
+    placement_drive_started = models.CharField(
+    max_length=3,
+    choices=[('Yes', 'Yes'), ('No', 'No')],
+    default='No'
+)
+
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

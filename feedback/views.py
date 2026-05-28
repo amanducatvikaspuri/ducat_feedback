@@ -2,11 +2,14 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from form.models import Student, Attendance
 from django.contrib import messages
+from django.db import models
 from dashboard.models import Trainer
 from .models import Feedback
 
 def feedback_form(request, phase=None):
-    trainers = Trainer.objects.all().order_by('name')
+    # Get branch from query params
+    branch_filter = request.GET.get('branch', 'Vikaspuri')
+    trainers = Trainer.objects.filter(branch=branch_filter).order_by('name')
     
     # Phase normalization
     phase_map = {
@@ -26,9 +29,9 @@ def feedback_form(request, phase=None):
             student_name = request.POST.get('student_name')
             email = request.POST.get('email')
             phone = request.POST.get('phone')
-            branch = request.POST.get('branch', 'Vikaspuri')
+            branch = request.POST.get('branch', branch_filter)
             trainer_name = request.POST.get('trainer_name')
-            technology = request.POST.get('technology')
+            technology = request.POST.get('batch_name') or request.POST.get('technology')
             
             # Legacy handling for old templates if any
             hour = request.POST.get('hour')
@@ -39,8 +42,8 @@ def feedback_form(request, phase=None):
             form_phase = mapped_phase if mapped_phase else request.POST.get('phase', 'P-1')
             
             # Check for duplicate
-            if Feedback.objects.filter(student_id=student_id, phase=form_phase, trainer_name=trainer_name).exists():
-                 messages.error(request, f'You have already submitted {form_phase} feedback for {trainer_name}!')
+            if Feedback.objects.filter(student_id=student_id, phase=form_phase, technology=technology).exists():
+                 messages.error(request, f'You have already submitted {form_phase} feedback for {technology}!')
                  if phase: return redirect('feedback_phase', phase=phase)
                  return redirect('feedback_form')
 
@@ -50,6 +53,9 @@ def feedback_form(request, phase=None):
             q4 = int(request.POST.get('ques4_rating', 5))
             
             review_desc = request.POST.get('review_description', '')
+            placement_drive_started = request.POST.get(
+                    'placement_drive_started', 'No'
+                )
             
             # Normalize and Clean data for Dashboard Matching
             def clean_str(s): return str(s or '').strip().upper()
@@ -66,7 +72,8 @@ def feedback_form(request, phase=None):
                 branch=branch, trainer_name=f_trainer, technology=f_tech,
                 batch_timing=f_timing, batch_mode=batch_mode, batch_type=f_type,
                 phase=f_phase, ques1_rating=q1, ques2_rating=q2, ques3_rating=q3,
-                ques4_rating=q4, review_description=review_desc
+                ques4_rating=q4, review_description=review_desc,
+                placement_drive_started=placement_drive_started,
             )
             messages.success(request, 'Success! Feedback submitted.')
             if phase: return redirect('feedback_phase', phase=phase)
@@ -85,48 +92,43 @@ def feedback_form(request, phase=None):
     }
     phase_label = phase_labels.get(mapped_phase, 'P-1 (Orientation & Basics)')
     
-    # Pre-fetch all batches grouped by technology for dynamic frontend selection
+    # Pre-fetch all batches grouped by TRAINER NAME for dynamic frontend selection
+    from django.utils import timezone
     from dashboard.models import Batch
     import json
     
-    # 1. Fetch ALL active batches
-    batches = Batch.objects.select_related('trainer').all()
+    today = timezone.localdate()
+    # Fetch active batches for the selected branch
+    batches = Batch.objects.select_related('trainer').filter(
+        models.Q(status='Active') & 
+        models.Q(trainer__branch=branch_filter) &
+        (models.Q(end_date__gte=today) | models.Q(end_date__isnull=True))
+    )
     
-    # 2. Derive technology choices from BOTH the static list and actual Batch records
-    # Normalize to Uppercase for consistent matching
-    batch_techs = set(b.batch_name.upper() for b in batches if b.batch_name)
-    static_techs = set(tech.upper() for tech in dict(Attendance.TECHNOLOGY_CHOICES).keys())
-    
-    # Merge and sort
-    all_techs = sorted(list(batch_techs | static_techs))
-    dynamic_tech_choices = [(tech, tech) for tech in all_techs]
-    
-    # 3. Group batches by their technology (normalized to uppercase)
-    # Mapping by BOTH Batch Name AND Trainer Course to ensure "DATA SCIENCE" finds Python/ML batches
+    # Group batches by trainer name
     batch_data = {}
     for b in batches:
-        tech_keys = set()
-        if b.batch_name: tech_keys.add(b.batch_name.upper())
-        if b.trainer and b.trainer.course: tech_keys.add(b.trainer.course.upper())
-        
-        for tech in tech_keys:
-            if tech not in batch_data:
-                batch_data[tech] = []
-            
-            # Avoid duplicate batch entries under same tech
-            batch_data[tech].append({
-                'id': b.id,
-                'trainer': b.trainer.name,
-                'timing': b.timing,
-                'type': b.batch_type
-            })
+        trainer_name = b.trainer.name if b.trainer else 'Unknown'
+        if trainer_name not in batch_data:
+            batch_data[trainer_name] = []
+        batch_data[trainer_name].append({
+            'id': b.id,
+            'batch_name': b.batch_name,
+            'trainer': trainer_name,
+            'timing': b.timing,
+            'type': b.batch_type
+        })
+
+    # Technology choices (for manual selection)
+    dynamic_tech_choices = Attendance.TECHNOLOGY_CHOICES
 
     context = {
         'trainers': trainers,
-        'technology_choices': dynamic_tech_choices,  # Using dynamic list now
+        'technology_choices': dynamic_tech_choices,
         'selected_phase': mapped_phase,
         'phase_label': phase_label,
         'batch_data_json': json.dumps(batch_data),
+        'active_branch': branch_filter,
     }
     
     # Template selection mapping
@@ -145,17 +147,22 @@ def get_student_details(request):
     if sid:
         try:
             student = Student.objects.filter(sid=sid).first()
+            print(student)
             if not student: student = Student.objects.filter(sid__icontains=sid).first()
             
             trainer = request.GET.get('trainer', '')
             phase = request.GET.get('phase', '')
             
             existing_fb = None
-            if student and trainer and phase:
-                existing_fb = Feedback.objects.filter(student_id=student.sid, trainer_name=trainer, phase=phase).first()
+            if student and phase:
+                # If trainer not provided, try to find it from student's current batch
+                search_trainer = trainer or (student.current_batch.trainer.name if student.current_batch else None)
+                if search_trainer:
+                    existing_fb = Feedback.objects.filter(student_id=student.sid, trainer_name=search_trainer, phase=phase).first()
             
             if student:
                 data = {
+                    'id':student.sid,
                     'status': 'success',
                     'name': student.name,
                     'course': student.course.upper() if student.course else '',

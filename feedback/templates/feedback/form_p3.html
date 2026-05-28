@@ -20,10 +20,10 @@
         }
 
         * { margin:0; padding:0; box-sizing:border-box; }
-        
-        body { 
+
+        body {
             background: var(--bg);
-            background-image: 
+            background-image:
                 radial-gradient(at 0% 0%, rgba(194, 65, 12, 0.4) 0px, transparent 50%),
                 radial-gradient(at 100% 0%, rgba(249, 115, 22, 0.1) 0px, transparent 50%);
             font-family: 'Inter', sans-serif;
@@ -62,10 +62,10 @@
             line-height: 1;
             margin-bottom: 5px;
         }
-        .ducat-logo span { 
-            font-size: 0.8rem; 
-            color: #fbbf24; 
-            letter-spacing: 4px; 
+        .ducat-logo span {
+            font-size: 0.8rem;
+            color: #fbbf24;
+            letter-spacing: 4px;
             text-transform: uppercase;
             font-weight: 800;
             margin-top: 4px;
@@ -117,8 +117,8 @@
             transition: all 0.3s ease;
             background: #f8fafc;
         }
-        .input-control:focus { 
-            border-color: var(--primary); 
+        .input-control:focus {
+            border-color: var(--primary);
             background: #fff;
             box-shadow: 0 0 0 4px rgba(194, 65, 12, 0.05);
         }
@@ -172,7 +172,7 @@
 
         <form method="POST" class="form-section">
             {% csrf_token %}
-            
+
             <div class="form-group">
                 <label>Student ID <span>*</span></label>
                 <input type="text" name="student_id" id="id_student_id" class="input-control" placeholder="Enter Registration ID (e.g. 123/24)" required>
@@ -193,14 +193,32 @@
             <div class="grid-row">
                 <div class="form-group">
                     <label>Contact Phone</label>
-                    <input type="text" name="phone" id="id_phone" class="input-control" placeholder="+91 XXXX-XXXXXX">
+                    <input type="text" name="phone" id="id_phone" class="input-control" placeholder="9876543210" maxlength="10" minlength="10" pattern="\d{10}" title="Please enter exactly 10 digits" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)">
                 </div>
             </div>
 
             <div class="grid-row">
                 <div class="form-group">
-                    <label>Course/Tech <span>*</span></label>
-                    <select name="technology" id="id_technology" class="input-control" required onchange="updateBatches()">
+                    <label>Trainer Name <span>*</span></label>
+                    <select name="trainer_name" id="id_trainer_select" class="input-control" required onchange="updateBatchesByTrainer()">
+                        <option value="">Select Trainer</option>
+                        {% for trainer in trainers %}
+                            <option value="{{ trainer.name }}">{{ trainer.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Select Running Batch <span>*</span></label>
+                    <select id="id_batch_select" class="input-control" required onchange="onBatchSelect()">
+                        <option value="">Select Trainer First...</option>
+                    </select>
+                    <div id="batch_info_display" style="font-size: 0.8rem; color: var(--primary); margin-top: 5px; font-weight: 600;"></div>
+                </div>
+            </div>
+            <div class="grid-row">
+                <div class="form-group">
+                    <label>Technology/Course <span>*</span></label>
+                    <select name="technology" id="id_technology" class="input-control" required>
                         <option value="">Select Course</option>
                         {% for tech_val, tech_label in technology_choices %}
                             <option value="{{ tech_val }}">{{ tech_label }}</option>
@@ -208,37 +226,27 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Training Branch</label>
-                    <input type="text" name="branch" value="Vikaspuri" class="input-control" readonly style="background: #f1f5f9; cursor: not-allowed; color: #1e293b; font-weight: 600;">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Select Running Batch <span>*</span></label>
-                <select id="id_batch_select" class="input-control" required onchange="onBatchSelect()">
-                    <option value="">Select Course First...</option>
-                </select>
-                <div id="batch_info_display" style="font-size: 0.8rem; color: var(--primary); margin-top: 5px; font-weight: 600;"></div>
-            </div>
-
-            <div class="grid-row">
-                <div class="form-group">
-                    <label>Trainer <span>*</span></label>
-                    <input type="text" name="trainer_name" id="id_trainer" class="input-control" readonly style="background: #f1f5f9; cursor: not-allowed;">
-                </div>
-                <div class="form-group">
                     <label>Batch Type <span>*</span></label>
                     <input type="text" name="batch_type" id="batch_type_select" class="input-control" readonly style="background: #f1f5f9; cursor: not-allowed;">
                 </div>
             </div>
-
             <input type="hidden" name="batch_timing" id="id_batch_timing">
-            <input type="hidden" name="batch_mode" id="id_batch_mode">
+            <input type="hidden" name="batch_name" id="id_batch_name">
+            <input type="hidden" name="trainer_name" id="id_trainer">
 
-            <div class="form-group">
-                <label>Training Phase <span>*</span></label>
-                <input type="text" class="input-control" readonly style="background: #f1f5f9; cursor: not-allowed; color: #1e293b; font-weight: 600;" value="P-3 (Project Progress)">
-                <input type="hidden" name="phase" value="P-3" id="phase_select">
+            <div class="grid-row">
+                <div class="form-group">
+                    <label>Training Phase <span>*</span></label>
+                    <input type="text" class="input-control" readonly style="background: #f1f5f9; cursor: not-allowed; color: #1e293b; font-weight: 600;" value="P-3 (Project Progress)">
+                    <input type="hidden" name="phase" value="P-3" id="phase_select">
+                </div>
+                <div class="form-group">
+                    <label>Training Mode <span>*</span></label>
+                    <select name="batch_mode" id="id_batch_mode" class="input-control" required>
+                        <option value="Offline">Offline (Classroom)</option>
+                        <option value="Online">Online (Live Class)</option>
+                    </select>
+                </div>
             </div>
 
             <div style="margin: 30px 0 20px;"><h3 style="font-size: 1rem; color: var(--primary); font-weight: 800; border-left: 4px solid var(--accent-glow); padding-left: 15px; text-transform: uppercase;">PROJECT PROGRESS ASSESSMENT</h3></div>
@@ -253,7 +261,7 @@
                     <input type="radio" id="q1-1" name="ques1_rating" value="1" /><label for="q1-1"><i class="fa-solid fa-star"></i></label>
                 </div>
             </div>
-            
+
             <div class="rating-card">
                 <h4>2. The trainer maintains a comfortable pace while covering advanced topics. <span>*</span></h4>
                 <div class="star-rating">
@@ -303,68 +311,61 @@
         const sidInput = document.getElementById('id_student_id');
         const techSelect = document.getElementById('id_technology');
         const batchSelect = document.getElementById('id_batch_select');
-        const trainerInput = document.getElementById('id_trainer');
+        const trainerSelect = document.getElementById('id_trainer_select');
+        const trainerHidden = document.getElementById('id_trainer');
         const batchTypeInput = document.getElementById('batch_type_select');
         const batchTimingInput = document.getElementById('id_batch_timing');
         const batchModeInput = document.getElementById('id_batch_mode');
         const statusMsg = document.getElementById('id_status_msg');
         const submitBtn = document.getElementById('submitBtn');
-
+        // allBatches is now grouped by TRAINER NAME
         const allBatches = JSON.parse('{{ batch_data_json|escapejs }}');
-
-        function updateBatches(autoSelectedBatchData = null) {
-            const selectedTech = techSelect.value ? techSelect.value.toUpperCase() : "";
+        function updateBatchesByTrainer(autoSelectBatch = null) {
+            const selectedTrainer = trainerSelect.value;
             batchSelect.innerHTML = '<option value="">Choose Batch...</option>';
-            
-            if (selectedTech && allBatches[selectedTech]) {
-                allBatches[selectedTech].forEach(b => {
+            if (selectedTrainer && allBatches[selectedTrainer]) {
+                allBatches[selectedTrainer].forEach(b => {
                     const opt = document.createElement('option');
                     opt.value = encodeURIComponent(JSON.stringify(b));
-                    opt.textContent = `${b.trainer} | ${b.timing} (${b.type})`;
+                    opt.textContent = `${b.batch_name} | ${b.timing} (${b.type})`;
                     batchSelect.appendChild(opt);
-                    
-                    if (autoSelectedBatchData && 
-                        b.trainer === autoSelectedBatchData.trainer && 
-                        b.timing === autoSelectedBatchData.timing && 
-                        b.type === autoSelectedBatchData.type) {
+                    if (autoSelectBatch && b.timing === autoSelectBatch.timing && b.type === autoSelectBatch.type) {
                         batchSelect.value = opt.value;
                     }
                 });
-            } else if (selectedTech) {
-                batchSelect.innerHTML = '<option value="">No running batches for this tech</option>';
+            } else if (selectedTrainer) {
+                batchSelect.innerHTML = '<option value="">No active batches for this trainer</option>';
             } else {
-                batchSelect.innerHTML = '<option value="">Select Course First...</option>';
+                batchSelect.innerHTML = '<option value="">Select Trainer First...</option>';
             }
             onBatchSelect();
         }
-
         function onBatchSelect() {
             if (batchSelect.value) {
                 try {
                     const b = JSON.parse(decodeURIComponent(batchSelect.value));
-                    trainerInput.value = b.trainer;
+                    trainerHidden.value = trainerSelect.value;
                     batchTypeInput.value = b.type;
                     batchTimingInput.value = b.timing;
+                    if (document.getElementById('id_batch_name')) document.getElementById('id_batch_name').value = b.batch_name;
                     if (batchModeInput) batchModeInput.value = b.type.toLowerCase().includes('online') ? 'Online' : 'Offline';
-                    document.getElementById('batch_info_display').innerText = `✅ Assigned: ${b.trainer} - ${b.timing}`;
+                    document.getElementById('batch_info_display').innerText = `✅ Batch: ${b.batch_name} | ${b.timing}`;
                 } catch(e) { console.error(e); }
             } else {
-                trainerInput.value = '';
+                trainerHidden.value = '';
                 batchTypeInput.value = '';
                 batchTimingInput.value = '';
+                if (document.getElementById('id_batch_name')) document.getElementById('id_batch_name').value = '';
                 document.getElementById('batch_info_display').innerText = '';
             }
         }
-
         function checkStatus() {
             const sid = sidInput.value.trim();
-            const phase = "P-3";
-
+            const phase = "P-3"; // YAHAN FILE KE HISAAB SE P-2, P-3, YA P-4 LIKH DENA
             if (sid.length < 2) {
                 statusMsg.innerText = '';
                 return;
             }
-
             statusMsg.innerText = 'Searching...';
             fetch(`/feedback/get-student/?sid=${sid}&phase=${phase}`)
                 .then(response => response.json())
@@ -373,23 +374,22 @@
                         document.getElementById('id_student_name').value = data.name || '';
                         document.getElementById('id_email').value = data.email || '';
                         document.getElementById('id_phone').value = data.phone || '';
-
-                        if (data.course) {
-                            techSelect.value = data.course;
-                            const autoBatch = (data.trainer_name && data.batch_timing && data.batch_type) ? {
-                                trainer: data.trainer_name,
+                        if (data.trainer_name) {
+                            trainerSelect.value = data.trainer_name;
+                            const autoBatch = (data.batch_timing && data.batch_type) ? {
                                 timing: data.batch_timing,
                                 type: data.batch_type
                             } : null;
-                            updateBatches(autoBatch);
+                            updateBatchesByTrainer(autoBatch);
                         }
-
+                        if (data.course && techSelect) {
+                            techSelect.value = data.course;
+                        }
                         if (data.already_submitted) {
                             statusMsg.style.color = '#e11d48';
                             statusMsg.innerText = '⚠️ Existing feedback loaded (Read-only)!';
                             submitBtn.disabled = true;
                             submitBtn.style.opacity = '0.5';
-
                             if (data.q1) document.getElementById(`q1-${data.q1}`).checked = true;
                             if (data.q2) document.getElementById(`q2-${data.q2}`).checked = true;
                             if (data.q3) document.getElementById(`q3-${data.q3}`).checked = true;
@@ -397,11 +397,12 @@
                             if (data.review) {
                                 document.getElementById('id_suggestions').value = data.review;
                             }
-                            
+
                             document.querySelectorAll('input[type="radio"]').forEach(el => el.disabled = true);
                             document.getElementById('id_suggestions').readOnly = true;
                             techSelect.disabled = true;
                             batchSelect.disabled = true;
+                            trainerSelect.disabled = true;
                         } else {
                             statusMsg.style.color = '#10b981';
                             statusMsg.innerText = '✅ Details fetched!';
@@ -411,6 +412,7 @@
                             document.getElementById('id_suggestions').readOnly = false;
                             techSelect.disabled = false;
                             batchSelect.disabled = false;
+                            trainerSelect.disabled = false;
                         }
                     } else {
                         statusMsg.style.color = 'var(--text-muted)';
@@ -426,11 +428,36 @@
             document.getElementById('wordcount').textContent = `[Words: ${count}/200]`;
             if (count > 200) {
                 textarea.value = words.slice(0, 200).join(' ');
-                document.getElementById('wordcount').style.color = '#ef4444'; 
+                document.getElementById('wordcount').style.color = '#ef4444';
             } else {
                 document.getElementById('wordcount').style.color = 'inherit';
             }
         }
+        function toggleSuggestionsRequired() {
+            const ratings = document.querySelectorAll('input[type="radio"]:checked');
+            const suggestionsField = document.getElementById('id_suggestions');
+            let needsComment = false;
+
+            ratings.forEach(radio => {
+                if (parseInt(radio.value) < 5) {
+                    needsComment = true;
+                }
+            });
+
+            if (needsComment) {
+                suggestionsField.required = true;
+                suggestionsField.placeholder = "Please explain the reason for the lower rating (Required)*";
+                suggestionsField.style.borderColor = "#e11d48";
+            } else {
+                suggestionsField.required = false;
+                suggestionsField.placeholder = "Mention any challenges in your current project modules.";
+                suggestionsField.style.borderColor = "var(--border)";
+            }
+        }
+
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', toggleSuggestionsRequired);
+        });
     </script>
 </body>
 </html>

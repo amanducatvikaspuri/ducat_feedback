@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ducat Phase 1 Review - Orientation & Basics</title>
+    <title>Ducat Phase 1 Review - {{ active_branch }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -157,7 +157,7 @@
 <body>
     <div class="container">
         <header class="header">
-            <div class="ducat-logo">DUCAT <span>School of Ai</span></div>
+            <div class="ducat-logo">DUCAT <span>{{ active_branch }}</span></div>
             <div><span class="stage-badge">Phase 1: Orientation & Basics</span></div>
         </header>
 
@@ -193,28 +193,28 @@
             <div class="grid-row">
                 <div class="form-group">
                     <label>Contact Phone</label>
-                    <input type="text" name="phone" id="id_phone" class="input-control" placeholder="+91 XXXX-XXXXXX">
+                    <input type="text" name="phone" id="id_phone" class="input-control" placeholder="9876543210" maxlength="10" minlength="10" pattern="\d{10}" title="Please enter exactly 10 digits" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)">
                 </div>
                 <div class="form-group">
                     <label>Training Branch</label>
-                    <input type="text" name="branch" value="Vikaspuri" class="input-control" readonly style="background: #f1f5f9; cursor: not-allowed; color: #1e293b; font-weight: 600;">
+                    <input type="text" name="branch" value="{{ active_branch }}" class="input-control" readonly style="background: #f1f5f9; cursor: not-allowed; color: #1e293b; font-weight: 600;">
                 </div>
             </div>
 
             <div class="grid-row">
                 <div class="form-group">
-                    <label>Technology/Course <span>*</span></label>
-                    <select name="technology" id="id_technology" class="input-control" required onchange="updateBatches()">
-                        <option value="">Select Course</option>
-                        {% for tech_val, tech_label in technology_choices %}
-                            <option value="{{ tech_val }}">{{ tech_label }}</option>
+                    <label>Trainer Name <span>*</span></label>
+                    <select name="trainer_name" id="id_trainer_select" class="input-control" required onchange="updateBatchesByTrainer()">
+                        <option value="">Select Trainer</option>
+                        {% for trainer in trainers %}
+                            <option value="{{ trainer.name }}">{{ trainer.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Select Running Batch <span>*</span></label>
                     <select id="id_batch_select" class="input-control" required onchange="onBatchSelect()">
-                        <option value="">Select Course First...</option>
+                        <option value="">Select Trainer First...</option>
                     </select>
                     <div id="batch_info_display" style="font-size: 0.8rem; color: var(--primary); margin-top: 5px; font-weight: 600;"></div>
                 </div>
@@ -222,8 +222,13 @@
 
             <div class="grid-row">
                 <div class="form-group">
-                    <label>Trainer <span>*</span></label>
-                    <input type="text" name="trainer_name" id="id_trainer" class="input-control" readonly style="background: #f1f5f9; cursor: not-allowed;">
+                    <label>Technology/Course <span>*</span></label>
+                    <select name="technology" id="id_technology" class="input-control" required>
+                        <option value="">Select Course</option>
+                        {% for tech_val, tech_label in technology_choices %}
+                            <option value="{{ tech_val }}">{{ tech_label }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Batch Type <span>*</span></label>
@@ -232,12 +237,23 @@
             </div>
 
             <input type="hidden" name="batch_timing" id="id_batch_timing">
-            <input type="hidden" name="batch_mode" id="id_batch_mode">
+            <input type="hidden" name="batch_name" id="id_batch_name">
+            <input type="hidden" name="trainer_name" id="id_trainer">
 
-            <div class="form-group">
-                <label>Training Phase <span>*</span></label>
-                <input type="text" class="input-control" readonly style="background: #f1f5f9; cursor: not-allowed; color: #1e293b; font-weight: 600;" value="P-1 (Orientation)">
-                <input type="hidden" name="phase" value="P-1" id="phase_select">
+
+            <div class="grid-row">
+                <div class="form-group">
+                    <label>Training Phase <span>*</span></label>
+                    <input type="text" class="input-control" readonly style="background: #f1f5f9; cursor: not-allowed; color: #1e293b; font-weight: 600;" value="P-1 (Orientation)">
+                    <input type="hidden" name="phase" value="P-1" id="phase_select">
+                </div>
+                <div class="form-group">
+                    <label>Training Mode <span>*</span></label>
+                    <select name="batch_mode" id="id_batch_mode" class="input-control" required>
+                        <option value="Offline">Offline (Classroom)</option>
+                        <option value="Online">Online (Live Class)</option>
+                    </select>
+                </div>
             </div>
 
             <div style="margin: 30px 0 20px;"><h3 style="font-size: 1rem; color: var(--primary); font-weight: 800; border-left: 4px solid var(--accent-glow); padding-left: 15px; text-transform: uppercase;">ORIENTATION REVIEW</h3></div>
@@ -276,7 +292,7 @@
             </div>
 
             <div class="rating-card">
-                <h4>4. Are opportunities available to resolve doubts outside class hours? <span>*</span></h4>
+                <h4>4. Does the trainer help you to clear your doubts? <span>*</span></h4>
                 <div class="star-rating">
                     <input type="radio" id="q4-5" name="ques4_rating" value="5" required /><label for="q4-5"><i class="fa-solid fa-star"></i></label>
                     <input type="radio" id="q4-4" name="ques4_rating" value="4" /><label for="q4-4"><i class="fa-solid fa-star"></i></label>
@@ -302,59 +318,66 @@
         const sidInput = document.getElementById('id_student_id');
         const techSelect = document.getElementById('id_technology');
         const batchSelect = document.getElementById('id_batch_select');
-        const trainerInput = document.getElementById('id_trainer');
+        const trainerSelect = document.getElementById('id_trainer_select');
+        const trainerHidden = document.getElementById('id_trainer');
         const batchTypeInput = document.getElementById('batch_type_select');
         const batchTimingInput = document.getElementById('id_batch_timing');
         const batchModeInput = document.getElementById('id_batch_mode');
         const statusMsg = document.getElementById('id_status_msg');
         const submitBtn = document.getElementById('submitBtn');
 
+        // allBatches is now grouped by TRAINER NAME
         const allBatches = JSON.parse('{{ batch_data_json|escapejs }}');
 
-        function updateBatches(autoSelectedBatchData = null) {
-            const selectedTech = techSelect.value ? techSelect.value.toUpperCase() : "";
+        // Step 1: When trainer is selected → load their running batches
+        function updateBatchesByTrainer(autoSelectBatch = null) {
+            const selectedTrainer = trainerSelect.value;
             batchSelect.innerHTML = '<option value="">Choose Batch...</option>';
-            
-            if (selectedTech && allBatches[selectedTech]) {
-                allBatches[selectedTech].forEach(b => {
+
+            if (selectedTrainer && allBatches[selectedTrainer]) {
+                allBatches[selectedTrainer].forEach(b => {
                     const opt = document.createElement('option');
                     opt.value = encodeURIComponent(JSON.stringify(b));
-                    opt.textContent = `${b.trainer} | ${b.timing} (${b.type})`;
+                    opt.textContent = `${b.batch_name} | ${b.timing} (${b.type})`;
                     batchSelect.appendChild(opt);
-                    
-                    if (autoSelectedBatchData && 
-                        b.trainer === autoSelectedBatchData.trainer && 
-                        b.timing === autoSelectedBatchData.timing && 
-                        b.type === autoSelectedBatchData.type) {
+
+                    // Auto-select if batch data is provided (e.g. from student lookup)
+                    if (autoSelectBatch &&
+                        b.timing === autoSelectBatch.timing &&
+                        b.type === autoSelectBatch.type) {
                         batchSelect.value = opt.value;
                     }
                 });
-            } else if (selectedTech) {
-                batchSelect.innerHTML = '<option value="">No running batches for this tech</option>';
+            } else if (selectedTrainer) {
+                batchSelect.innerHTML = '<option value="">No active batches for this trainer</option>';
             } else {
-                batchSelect.innerHTML = '<option value="">Select Course First...</option>';
+                batchSelect.innerHTML = '<option value="">Select Trainer First...</option>';
             }
             onBatchSelect();
         }
 
+        // Step 2: When batch is selected → fill batch type, timing (trainer already selected)
         function onBatchSelect() {
             if (batchSelect.value) {
                 try {
                     const b = JSON.parse(decodeURIComponent(batchSelect.value));
-                    trainerInput.value = b.trainer;
+                    trainerHidden.value = trainerSelect.value;
                     batchTypeInput.value = b.type;
                     batchTimingInput.value = b.timing;
+                    if (document.getElementById('id_batch_name')) document.getElementById('id_batch_name').value = b.batch_name;
                     if (batchModeInput) batchModeInput.value = b.type.toLowerCase().includes('online') ? 'Online' : 'Offline';
-                    document.getElementById('batch_info_display').innerText = `✅ Assigned: ${b.trainer} - ${b.timing}`;
+                    document.getElementById('batch_info_display').innerText = `✅ Batch: ${b.batch_name} | ${b.timing}`;
                 } catch(e) { console.error(e); }
             } else {
-                trainerInput.value = '';
+                trainerHidden.value = '';
                 batchTypeInput.value = '';
                 batchTimingInput.value = '';
+                if (document.getElementById('id_batch_name')) document.getElementById('id_batch_name').value = '';
                 document.getElementById('batch_info_display').innerText = '';
             }
         }
 
+        // Step 3: Auto-fill from student ID lookup
         function checkStatus() {
             const sid = sidInput.value.trim();
             const phase = "P-1";
@@ -373,14 +396,19 @@
                         document.getElementById('id_email').value = data.email || '';
                         document.getElementById('id_phone').value = data.phone || '';
 
-                        if (data.course) {
-                            techSelect.value = data.course;
-                            const autoBatch = (data.trainer_name && data.batch_timing && data.batch_type) ? {
-                                trainer: data.trainer_name,
+                        // Auto-select trainer if available from student record
+                        if (data.trainer_name) {
+                            trainerSelect.value = data.trainer_name;
+                            const autoBatch = (data.batch_timing && data.batch_type) ? {
                                 timing: data.batch_timing,
                                 type: data.batch_type
                             } : null;
-                            updateBatches(autoBatch);
+                            updateBatchesByTrainer(autoBatch);
+                        }
+
+                        // Auto-select technology/course if available
+                        if (data.course && techSelect) {
+                            techSelect.value = data.course;
                         }
 
                         if (data.already_submitted) {
@@ -402,6 +430,7 @@
                             document.getElementById('id_suggestions').readOnly = true;
                             techSelect.disabled = true;
                             batchSelect.disabled = true;
+                            trainerSelect.disabled = true;
                         } else {
                             statusMsg.style.color = '#10b981';
                             statusMsg.innerText = '✅ Details fetched!';
@@ -411,6 +440,7 @@
                             document.getElementById('id_suggestions').readOnly = false;
                             techSelect.disabled = false;
                             batchSelect.disabled = false;
+                            trainerSelect.disabled = false;
                         }
                     } else {
                         statusMsg.style.color = 'var(--text-muted)';
@@ -431,6 +461,31 @@
                 document.getElementById('wordcount').style.color = 'inherit';
             }
         }
+        function toggleSuggestionsRequired() {
+            const ratings = document.querySelectorAll('input[type="radio"]:checked');
+            const suggestionsField = document.getElementById('id_suggestions');
+            let needsComment = false;
+            
+            ratings.forEach(radio => {
+                if (parseInt(radio.value) < 5) {
+                    needsComment = true;
+                }
+            });
+            
+            if (needsComment) {
+                suggestionsField.required = true;
+                suggestionsField.placeholder = "Please explain the reason for the lower rating (Required)*";
+                suggestionsField.style.borderColor = "#e11d48";
+            } else {
+                suggestionsField.required = false;
+                suggestionsField.placeholder = "Any suggestions for initial classes?";
+                suggestionsField.style.borderColor = "var(--border)";
+            }
+        }
+
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', toggleSuggestionsRequired);
+        });
     </script>
 </body>
 </html>
