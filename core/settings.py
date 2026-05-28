@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-@!ckdk#p5-ffmmqrhey55e3%2hwx+m1jhzilefzvpu%*y#+vtt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["https://ducat-feedback.onrender.com","*"]
 CSRF_TRUSTED_ORIGINS = [
     "https://web-feedback-update.onrender.com",
 ]
