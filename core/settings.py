@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["https://ducat-feedback.onrender.com","*"]
 CSRF_TRUSTED_ORIGINS = [
-    "https://web-feedback-update.onrender.com",
+    "https://ducat-feedback.onrender.com",
 ]
 
 # Application definition
