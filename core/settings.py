@@ -26,7 +26,9 @@ SECRET_KEY = 'django-insecure-@!ckdk#p5-ffmmqrhey55e3%2hwx+m1jhzilefzvpu%*y#+vtt
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://web-feedback-update.onrender.com",
+]
 
 # Application definition
 
